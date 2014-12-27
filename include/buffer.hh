@@ -13,14 +13,10 @@ namespace uvpp {
 
         BufferView(char const *, std::size_t len);
 
-        BufferView(std::vector<char> const &c) : data_(c.data()), length_(c.size()) {
-        }
-
-        BufferView(std::string const &c) : data_(c.data()), length_(c.size()) {
-        }
+        BufferView(std::vector<char> const &c) : data_(c.data()), length_(c.size()) {}
+        BufferView(std::string const &c) : data_(c.data()), length_(c.size()) {}
 
         BufferView(BufferView const &) = delete;
-
         BufferView(BufferView &&) = delete;
 
         char const *data() const;

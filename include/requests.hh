@@ -37,6 +37,17 @@ namespace uvpp {
         }
     };
 
+
+    using WriteCb = std::function<void(WriteRequest&, int status)>;
+    using ConnectCb = std::function<void(ConnectRequest&, int status)>;
+    using ShutdownCb = std::function<void(ShutdownRequest&, int status)>;
+    using FsCb = std::function<void(FsRequest&)>;
+    using WorkCb = std::function<void(WorkRequest&)>;
+    using AfterWorkCb = std::function<void(WorkRequest&, int status)>;
+    using GetAddrInfoCb = std::function<void(GetAddrInfoRequest&, int status, ::addrinfo& res)>;
+    using GetNameInfoCb = std::function<void(GetNameInfoRequest&, int status, std::string const& hostname, std::string const& service)>;
+
+
     class GetAddrInfoRequest : public RequestBase<uv_getaddrinfo_t> { public: GetAddrInfoRequest(); };
     class GetNameInfoRequest : public RequestBase<uv_getnameinfo_t> { public: GetNameInfoRequest(); };
     class ShutdownRequest : public RequestBase<uv_shutdown_t> { public: ShutdownRequest(); };
@@ -44,5 +55,5 @@ namespace uvpp {
     class ConnectRequest : public RequestBase<uv_connect_t> { public: ConnectRequest(); };
     class UdpSendRequest : public RequestBase<uv_udp_send_t> { public: UdpSendRequest(); };
     class FsRequest : public RequestBase<uv_fs_t> { public: FsRequest(); };
-    class WorkRequest : public RequestBase<uv_work_t> { public: WorkRequest(); };
+    class WorkRequest : public RequestBase<uv_fs_t> { public: WorkRequest(); };
 }
