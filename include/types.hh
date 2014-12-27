@@ -2,82 +2,55 @@
 
 #include "uv.h"
 
+#include <utility>
 #include <type_traits>
 
 namespace uvpp {
-    using Handle = ::uv_handle_t;
-    using Stream = ::uv_stream_t;
-
-
-
-    template<typename T> struct is_stream : std::false_type {};
-    template<typename T> struct is_handle : is_stream<T> {};
-
-    template<> struct is_handle<Handle> : std::true_type {};
-    template<> struct is_stream<Stream> : std::true_type {};
-
-    template<typename From, typename To> struct is_handle_castable : std::false_type {};
-    template<typename From> struct is_handle_castable<From&, Handle&> : is_handle<From> {};
-    template<typename From> struct is_handle_castable<From&, Handle const&> : is_handle<From> {};
-    template<typename From> struct is_handle_castable<From&, Stream&> : is_stream<From> {};
-    template<typename From> struct is_handle_castable<From&, Stream const&> : is_stream<From> {};
-
-    template<typename From, typename To>
-    auto handle_cast(From&& from)
-    -> typename std::enable_if<is_handle_castable<From, To>::value, To>::type {
-        return reinterpret_cast<To const&>(std::forward<From>(from));
-    }
+    using ::uv_handle_t;
+    using ::uv_stream_t;
 
     template<typename T>
-    class Wrapper {
+    class WrappedObject {
     public:
         T& Get() { return t; }
         T const& Get() const { return t; }
 
-        operator T&() {
-            return Get();
-        }
+    protected:
+        template<typename... Args>
+        WrappedObject(Args&&... args) : t(std::forward<Args>(args)...) {}
 
-        operator T const&() const {
-            return Get();
-        }
     private:
         T t;
     };
 
-    template<typename From, typename To>
-    auto handle_cast<Wrapper<From>, To>(Wrapper<From>&& from)
-    -> typename std::enable_if<is_handle_castable<Wrapper<From>, To>::value, To>::type {
-        return reinterpret_cast<To const&>(std::forward<From>(from.Get()));
+    template<typename T, typename _=void> struct is_handle : std::false_type {};
+    template<typename T, typename _=void> struct is_stream : std::false_type {};
+
+    template<typename From, typename To> struct is_handle_castable : std::false_type {};
+
+    template<typename To, typename From>
+    auto handle_cast(From& from)
+    -> typename std::enable_if<is_handle_castable<From&, To>::value, To>::type {
+        return reinterpret_cast<To>(from.Get());
     }
 
-    template<typename T> struct is_stream<Wrapper<T>> : is_stream<T> {};
+    // Helpers
+    template<bool v> struct is_true : std::integral_constant<bool, v> {};
+    template<typename A, typename B> struct Or : is_true<A::value || B::value> {};
+    template<typename T> struct Void { using Type = void; };
 
-    template<typename T>
-    class HandleWrapper : public Wrapper<T> {
-    public:
-        HandleWrapper() {}
-        HandleWrapper(HandleWrapper const&) = delete;
+    // Specializations
+    template<typename T> struct is_handle<T, typename Void<typename T::IsHandle>::Type>
+        : std::true_type {};
+    template<typename T> struct is_stream<T, typename Void<typename T::IsStream>::Type>
+        : std::true_type {};
 
-        virtual ~HandleWrapper() {
-            ::uv_close(&handle_cast(*this), nullptr);
-        }
+    template<typename From, typename To> struct is_handle_castable<From const&, To const&>
+        : is_handle_castable<From&, To&> {};
 
-        operator Handle&() { return handle_cast(*this); }
-        operator Handle const&() const { return handle_cast(*this); }
-    };
+    template<typename From> struct is_handle_castable<From&, uv_handle_t&>
+        : is_handle<From> {};
 
-    template<typename T> struct is_handle<HandleWrapper<T>> : std::true_type {};
-
-    template<typename T>
-    class StreamWrapper : public HandleWrapper<T> {
-    public:
-        StreamWrapper() {}
-        StreamWrapper(StreamWrapper const&) = delete;
-
-        operator Stream&() { return handle_cast(*this); }
-        operator Stream const&() const { return handle_cast(*this); }
-    };
-
-    template<typename T> struct is_stream<StreamWrapper<T>> : std::true_type {};
-};
+    template<typename From> struct is_handle_castable<From&, uv_stream_t&>
+        : is_stream<From> {};
+}
