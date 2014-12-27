@@ -75,4 +75,15 @@ namespace uvpp {
 //    template<> struct is_handle<FsEvent> : std::true_type {};
 //    template<> struct is_handle<FsPoll> : std::true_type {};
 //    template<> struct is_handle<Signal> : std::true_type {};
+
+    int is_active(Handle const&);
+    int is_closing(Handle const&);
+    int close(Handle&, CloseCb const&);
+    int ref(Handle&);
+    int unref(Handle&);
+    int has_ref(Handle const&);
+
+    int send_buffer_size(Handle&, int* value);
+    int recv_buffer_size(Handle&, int* value);
+    int fileno(Handle const&, uv_os_fd_t*);
 }
