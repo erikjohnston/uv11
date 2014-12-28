@@ -3,29 +3,48 @@
 #include <cstdlib>
 #include <iterator>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "uv.h"
 
 namespace uvpp {
     using ::uv_buf_t;
-    // using Buffer = uv_buf_t;
+    using Buffer = uv_buf_t;
 
-    class Buffer : public uv_buf_t {
-    public:
-        Buffer();
-        Buffer(char*, std::size_t);
-        Buffer(std::vector<char>&);
-        Buffer(std::string&);
+    Buffer make_buffer(std::vector<char>&);
+    Buffer make_buffer(char*, unsigned int);
 
-        char* begin();
-        char const * begin() const;
-        char const * cbegin() const;
+    // Allow people to iterate over uv_buf_t. These are found via ADL.
+    template<typename B, typename = typename std::enable_if<std::is_same<B, Buffer>::value>::type >
+    char* begin(B& buf) {
+        return buf.base;
+    }
 
-        char* end();
-        char const * end() const;
-        char const * cend() const;
-    };
+    template<typename B, typename = typename std::enable_if<std::is_same<B, Buffer>::value>::type >
+    char const* begin(B& buf) {
+        return buf.base;
+    }
 
-    static_assert(sizeof(Buffer) == sizeof(uv_buf_t), "Buffer not same size as uv_buf_t");
+    template<typename B, typename = typename std::enable_if<std::is_same<B, Buffer>::value>::type >
+    char const* cbegin(B& buf) {
+        return buf.base;
+    }
+
+    template<typename B, typename = typename std::enable_if<std::is_same<B, Buffer>::value>::type >
+    char* end(B& buf) {
+        return buf.base + buf.len;
+    }
+
+    template<typename B, typename = typename std::enable_if<std::is_same<B, Buffer>::value>::type >
+    char const* end(B& buf) {
+        return buf.base + buf.len;
+    }
+
+    template<typename B, typename = typename std::enable_if<std::is_same<B, Buffer>::value>::type >
+    char const* cend(B& buf) {
+        return buf.base + buf.len;
+    }
 }
+
+

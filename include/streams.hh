@@ -62,10 +62,15 @@ namespace uvpp {
     int listen(Stream&, int backlog, ConnectionCb const&);
     int accept(Stream& server, Stream& client);
 
-    int write(WriteRequest&, Stream&, std::vector<Buffer const> const&, WriteCb const&);
-    int write2(WriteRequest&, Stream&, std::vector<Buffer const> const&, Stream&, WriteCb const&);
-    int try_write(Stream&, std::vector<Buffer const> const&);
+    // For write APIs, vector.size() must return a size that can be store in an
+    // unsigned int.
+    int write(WriteRequest&, Stream&, Buffer const&, WriteCb const&);
+    int write(WriteRequest&, Stream&, Buffer const[], unsigned int, WriteCb const&);
+    int write2(WriteRequest&, Stream&, Buffer const&, Stream&, WriteCb const&);
+    int write2(WriteRequest&, Stream&, Buffer const[], unsigned int, Stream&, WriteCb const&);
+    int try_write(Stream&, Buffer const&);
+    int try_write(Stream&, Buffer const[], unsigned int);
 
-    int is_readable(Stream const&);
-    int is_writable(Stream const&);
+    bool is_readable(Stream const&);
+    bool is_writable(Stream const&);
 }

@@ -25,7 +25,7 @@ int uvpp::read_start(Stream& stream, AllocCb const& alloc_cb, ReadCb const& read
         [](uv_stream_t* stream, ::ssize_t nread, ::uv_buf_t const* buf){
             Stream* s = reinterpret_cast<Stream*>(stream->data);
             // FIXME: How do we handle errors - i.e. if nread < 0
-            return s->on_read(*s, Buffer(buf->base, nread));
+            return s->on_read(*s, make_buffer(buf->base, nread));
         }
     );
 }
@@ -54,16 +54,14 @@ int uvpp::accept(Stream& server, Stream& client) {
     return ::uv_accept(&server.GetStream(), &client.GetStream());
 }
 
-int uvpp::write(WriteRequest& req, Stream& stream, std::vector<Buffer const> const& bufs,
+int uvpp::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
     WriteCb const& write_cb)
 {
-    // Vector *has* to stay in scope!
-    auto buf_arr = bufs.data();
     req.write_cb = write_cb;
     return uv_write(
         &req.Get(),
         &stream.GetStream(),
-        buf_arr, bufs.size(),
+        bufs, nbufs,
         [] (uv_write_t* r, int status) {
             WriteRequest* w = reinterpret_cast<WriteRequest*>(r->data);
             w->write_cb(*w, status);
@@ -72,16 +70,14 @@ int uvpp::write(WriteRequest& req, Stream& stream, std::vector<Buffer const> con
     );
 }
 
-int uvpp::write2(WriteRequest& req, Stream& stream, std::vector<Buffer const> const& bufs,
+int uvpp::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
     Stream& send_handle, WriteCb const& write_cb)
 {
-    // Vector *has* to stay in scope!
-    auto buf_arr = bufs.data();
     req.write_cb = write_cb;
     return uv_write2(
         &req.Get(),
         &stream.GetStream(),
-        buf_arr, bufs.size(),
+        bufs, nbufs,
         &send_handle.GetStream(),
         [] (uv_write_t* r, int status) {
             WriteRequest* w = reinterpret_cast<WriteRequest*>(r->data);
@@ -91,14 +87,18 @@ int uvpp::write2(WriteRequest& req, Stream& stream, std::vector<Buffer const> co
     );
 }
 
-int uvpp::try_write(Stream& stream, std::vector<Buffer const> const& bufs) {
-    return ::uv_try_write(&stream.GetStream(), bufs.data(), bufs.size());
+int uvpp::try_write(Stream& stream, Buffer const bufs[], unsigned int nbufs) {
+    return ::uv_try_write(
+        &stream.GetStream(),
+        bufs,
+        nbufs
+    );
 }
 
-int uvpp::is_readable(Stream const& stream) {
+bool uvpp::is_readable(Stream const& stream) {
     return ::uv_is_readable(&stream.GetStream());
 }
 
-int uvpp::is_writable(Stream const& stream) {
+bool uvpp::is_writable(Stream const& stream) {
     return ::uv_is_writable(&stream.GetStream());
 }
