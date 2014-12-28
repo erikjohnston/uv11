@@ -12,12 +12,12 @@ namespace uvpp {
         uv_loop_t& Get();
         uv_loop_t const& Get() const;
 
-        static Loop get_default();
-
     protected:
         Loop(uv_loop_t*);
 
     private:
         uv_loop_t* loop;
     };
+
+    extern Loop default_loop;
 }

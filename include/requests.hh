@@ -1,4 +1,4 @@
-#pragama once
+#pragma once
 
 #include "types.hh"
 
@@ -37,6 +37,15 @@ namespace uvpp {
         }
     };
 
+    class GetAddrInfoRequest;
+    class GetNameInfoRequest;
+    class ShutdownRequest;
+    class WriteRequest;
+    class ConnectRequest;
+    class UdpSendRequest;
+    class FsRequest;
+    class WorkRequest;
+
 
     using WriteCb = std::function<void(WriteRequest&, int status)>;
     using ConnectCb = std::function<void(ConnectRequest&, int status)>;
@@ -48,12 +57,35 @@ namespace uvpp {
     using GetNameInfoCb = std::function<void(GetNameInfoRequest&, int status, std::string const& hostname, std::string const& service)>;
 
 
-    class GetAddrInfoRequest : public RequestBase<uv_getaddrinfo_t> { public: GetAddrInfoRequest(); };
-    class GetNameInfoRequest : public RequestBase<uv_getnameinfo_t> { public: GetNameInfoRequest(); };
-    class ShutdownRequest : public RequestBase<uv_shutdown_t> { public: ShutdownRequest(); };
-    class WriteRequest : public RequestBase<uv_write_t> { public: WriteRequest(); };
-    class ConnectRequest : public RequestBase<uv_connect_t> { public: ConnectRequest(); };
-    class UdpSendRequest : public RequestBase<uv_udp_send_t> { public: UdpSendRequest(); };
-    class FsRequest : public RequestBase<uv_fs_t> { public: FsRequest(); };
-    class WorkRequest : public RequestBase<uv_fs_t> { public: WorkRequest(); };
+    class GetAddrInfoRequest : public RequestBase<uv_getaddrinfo_t> {
+    public: GetAddrInfoCb getaddrinfo_cb;
+    };
+
+    class GetNameInfoRequest : public RequestBase<uv_getnameinfo_t> {
+    public: GetNameInfoCb getnameinfo_cb;
+    };
+
+    class ShutdownRequest : public RequestBase<uv_shutdown_t> {
+    public: ShutdownCb shutdown_cb;
+    };
+
+    class WriteRequest : public RequestBase<uv_write_t> {
+    public: WriteCb write_cb;
+    };
+
+    class ConnectRequest : public RequestBase<uv_connect_t> {
+    public: ConnectCb connect_cb;
+    };
+
+    class UdpSendRequest : public RequestBase<uv_udp_send_t> {};
+
+    class FsRequest : public RequestBase<uv_fs_t> {
+    public: FsCb fs_cb;
+    };
+
+    class WorkRequest : public RequestBase<uv_fs_t> {
+    public:
+        WorkCb work_cb;
+        AfterWorkCb after_work_cb;
+    };
 }

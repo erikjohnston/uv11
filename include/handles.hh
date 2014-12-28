@@ -3,6 +3,7 @@
 #include "types.hh"
 
 #include <cstdlib>
+#include <functional>
 
 namespace uvpp {
     using ::uv_udp_t;
@@ -33,11 +34,16 @@ namespace uvpp {
 
         virtual ~Handle();
 
+        void close();
         void close(CloseCb const&);
 
-    protected:
+        bool is_closing();  // uv_is_closing cannot be called after receiving the close_cb
+
         AllocCb on_alloc;
         CloseCb on_close;
+
+    protected:
+        bool closing = false;
     };
 
     template<typename T>

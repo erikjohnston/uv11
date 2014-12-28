@@ -1,6 +1,7 @@
 #pragma once
 
 #include "buffer.hh"
+#include "loop.hh"
 #include "handles.hh"
 #include "requests.hh"
 #include "types.hh"
@@ -12,7 +13,7 @@ namespace uvpp {
 
     class Stream;
 
-    using ReadCb = std::function<void(Stream&, BufferView const&)>;
+    using ReadCb = std::function<void(Stream&, uv_buf_t const&)>;
     using ConnectionCb = std::function<void(Stream&, int status)>;
 
     class Stream : public Handle {
@@ -24,10 +25,6 @@ namespace uvpp {
 
         virtual ~Stream();
 
-        int read_start(AllocCb const&, ReadCb const&);
-        int listen(int backlog, ConnectionCb const&);
-
-    protected:
         ReadCb on_read;
         ConnectionCb on_connection;
     };
@@ -52,7 +49,7 @@ namespace uvpp {
         }
     };
 
-    class Tcp : public StreamBase<uv_tcp_t> { public: Tcp(); virtual ~Tcp(); };
+    class Tcp : public StreamBase<uv_tcp_t> { public: Tcp(); Tcp(Loop&); virtual ~Tcp(); };
     class Pipe : public StreamBase<uv_pipe_t> { public: Pipe(); };
     class Tty : public StreamBase<uv_tty_t> { public: Tty(); };
 
@@ -65,9 +62,9 @@ namespace uvpp {
     int listen(Stream&, int backlog, ConnectionCb const&);
     int accept(Stream& server, Stream& client);
 
-    int write(WriteRequest&, Stream&, std::vector<BufferView const> const&, WriteCb const&);
-    int write2(WriteRequest&, Stream&, std::vector<BufferView const> const&, Stream&, WriteCb const&);
-    int try_write(WriteRequest&, Stream&, std::vector<BufferView const> const&);
+    int write(WriteRequest&, Stream&, std::vector<Buffer const> const&, WriteCb const&);
+    int write2(WriteRequest&, Stream&, std::vector<Buffer const> const&, Stream&, WriteCb const&);
+    int try_write(Stream&, std::vector<Buffer const> const&);
 
     int is_readable(Stream const&);
     int is_writable(Stream const&);
