@@ -47,14 +47,14 @@ namespace uvpp {
     class WorkRequest;
 
 
-    using WriteCb = std::function<void(WriteRequest&, int status)>;
-    using ConnectCb = std::function<void(ConnectRequest&, int status)>;
-    using ShutdownCb = std::function<void(ShutdownRequest&, int status)>;
+    using WriteCb = std::function<void(WriteRequest&, Error)>;
+    using ConnectCb = std::function<void(ConnectRequest&, Error)>;
+    using ShutdownCb = std::function<void(ShutdownRequest&, Error)>;
     using FsCb = std::function<void(FsRequest&)>;
     using WorkCb = std::function<void(WorkRequest&)>;
     using AfterWorkCb = std::function<void(WorkRequest&, int status)>;
-    using GetAddrInfoCb = std::function<void(GetAddrInfoRequest&, int status, ::addrinfo& res)>;
-    using GetNameInfoCb = std::function<void(GetNameInfoRequest&, int status, std::string const& hostname, std::string const& service)>;
+    using GetAddrInfoCb = std::function<void(GetAddrInfoRequest&, Error, ::addrinfo& res)>;
+    using GetNameInfoCb = std::function<void(GetNameInfoRequest&, Error, std::string const& hostname, std::string const& service)>;
 
 
     class GetAddrInfoRequest : public RequestBase<uv_getaddrinfo_t> {

@@ -4,10 +4,14 @@
 
 #include <utility>
 #include <type_traits>
+#include <system_error>
+
 
 namespace uvpp {
     using ::uv_handle_t;
     using ::uv_stream_t;
+
+    using Error = std::error_code;
 
     template<typename T>
     class WrappedObject {
@@ -53,4 +57,7 @@ namespace uvpp {
 
     template<typename From> struct is_handle_castable<From&, uv_stream_t&>
         : is_stream<From> {};
+
+    std::error_category const& uv_category();
+    std::error_code make_error(int);
 }

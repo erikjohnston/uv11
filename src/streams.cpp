@@ -1,6 +1,17 @@
 #include "streams.hh"
 
+#include "loop.hh"
+
 using namespace uvpp;
+
+
+Stream::Stream(uv_stream_t* s) : Handle(reinterpret_cast<uv_handle_t*>(s)), stream_ptr(s) {}
+
+Stream::~Stream() {}
+
+uv_stream_t& Stream::GetStream() { return *stream_ptr; }
+uv_stream_t const& Stream::GetStream() const { return *stream_ptr; }
+
 
 Tcp::Tcp() : Tcp(default_loop) {}
 
@@ -12,87 +23,113 @@ Tcp::~Tcp() {
     if (!is_closing()) close();
 }
 
-int uvpp::read_start(Stream& stream, AllocCb const& alloc_cb, ReadCb const& read_cb) {
+Error uvpp::read_start(Stream& stream, AllocCb const& alloc_cb, ReadCb const& read_cb) {
     stream.on_alloc = alloc_cb;
     stream.on_read = read_cb;
 
-    return ::uv_read_start(
+    int s = ::uv_read_start(
         &stream.GetStream(),
         [](uv_handle_t* handle, ::size_t suggested_size, ::uv_buf_t* buf) {
             Handle* h = reinterpret_cast<Handle*>(handle->data);
             return h->on_alloc(*h, suggested_size, buf);
         },
-        [](uv_stream_t* stream, ::ssize_t nread, ::uv_buf_t const* buf){
-            Stream* s = reinterpret_cast<Stream*>(stream->data);
+        [](uv_stream_t* stream_ptr, ::ssize_t nread, ::uv_buf_t const* buf){
+            Stream* strm = reinterpret_cast<Stream*>(stream_ptr->data);
             // FIXME: How do we handle errors - i.e. if nread < 0
-            return s->on_read(*s, make_buffer(buf->base, nread));
+            if (nread >= 0) {
+                return strm->on_read(
+                    *strm,
+                    *buf,
+                    nread,
+                    make_error(0)
+                );
+            } else {
+                return strm->on_read(
+                    *strm,
+                    *buf,
+                    0,
+                    make_error(static_cast<int>(nread))
+                );
+            }
         }
     );
+
+    return make_error(s);
 }
 
-int uvpp::read_stop(Stream& stream) {
+Error uvpp::read_stop(Stream& stream) {
     stream.on_alloc = nullptr;
     stream.on_read = nullptr;
 
-    return ::uv_read_stop(&stream.GetStream());
+    int s = ::uv_read_stop(&stream.GetStream());
+    return make_error(s);
 }
 
-int uvpp::listen(Stream& stream, int backlog, ConnectionCb const& connection_cb) {
+Error uvpp::listen(Stream& stream, int backlog, ConnectionCb const& connection_cb) {
     stream.on_connection = connection_cb;
 
-    return ::uv_listen(
+    int s = ::uv_listen(
         &stream.GetStream(),
         backlog,
         [](uv_stream_t* server, int status) {
-            Stream* s = reinterpret_cast<Stream*>(server->data);
-            return s->on_connection(*s, status);
+            Stream* strm = reinterpret_cast<Stream*>(server->data);
+            return strm->on_connection(*strm, make_error(status));
         }
     );
+
+    return make_error(s);
 }
 
-int uvpp::accept(Stream& server, Stream& client) {
-    return ::uv_accept(&server.GetStream(), &client.GetStream());
+Error uvpp::accept(Stream& server, Stream& client) {
+    int s = ::uv_accept(&server.GetStream(), &client.GetStream());
+    return make_error(s);
 }
 
-int uvpp::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
+Error uvpp::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
     WriteCb const& write_cb)
 {
     req.write_cb = write_cb;
-    return uv_write(
+    int s = uv_write(
         &req.Get(),
         &stream.GetStream(),
         bufs, nbufs,
         [] (uv_write_t* r, int status) {
             WriteRequest* w = reinterpret_cast<WriteRequest*>(r->data);
-            w->write_cb(*w, status);
+            w->write_cb(*w, make_error(status));
             w->write_cb = nullptr;
         }
     );
+
+    return make_error(s);
 }
 
-int uvpp::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
+Error uvpp::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
     Stream& send_handle, WriteCb const& write_cb)
 {
     req.write_cb = write_cb;
-    return uv_write2(
+    int s = uv_write2(
         &req.Get(),
         &stream.GetStream(),
         bufs, nbufs,
         &send_handle.GetStream(),
         [] (uv_write_t* r, int status) {
             WriteRequest* w = reinterpret_cast<WriteRequest*>(r->data);
-            w->write_cb(*w, status);
+            w->write_cb(*w, make_error(status));
             w->write_cb = nullptr;
         }
     );
+
+    return make_error(s);
 }
 
-int uvpp::try_write(Stream& stream, Buffer const bufs[], unsigned int nbufs) {
-    return ::uv_try_write(
+Error uvpp::try_write(Stream& stream, Buffer const bufs[], unsigned int nbufs) {
+    int s = ::uv_try_write(
         &stream.GetStream(),
         bufs,
         nbufs
     );
+
+    return make_error(s);
 }
 
 bool uvpp::is_readable(Stream const& stream) {

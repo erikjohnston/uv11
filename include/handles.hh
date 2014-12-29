@@ -27,22 +27,22 @@ namespace uvpp {
     public:
         using IsHandle = void;
 
-        Handle();
-
-        virtual uv_handle_t& GetHandle() = 0;
-        virtual uv_handle_t const& GetHandle() const = 0;
-
+        Handle(uv_handle_t*);
         virtual ~Handle();
+
+        uv_handle_t& GetHandle();
+        uv_handle_t const& GetHandle() const;
 
         void close();
         void close(CloseCb const&);
 
-        bool is_closing();  // uv_is_closing cannot be called after receiving the close_cb
+        bool is_closing() const;  // uv_is_closing cannot be called after receiving the close_cb
 
         AllocCb on_alloc;
         CloseCb on_close;
 
     protected:
+        ::uv_handle_t* handle_ptr;
         bool closing = false;
     };
 
@@ -82,14 +82,15 @@ namespace uvpp {
 //    template<> struct is_handle<FsPoll> : std::true_type {};
 //    template<> struct is_handle<Signal> : std::true_type {};
 
-    int is_active(Handle const&);
-    int is_closing(Handle const&);
-    int close(Handle&, CloseCb const&);
-    int ref(Handle&);
-    int unref(Handle&);
-    int has_ref(Handle const&);
+    bool is_active(Handle const&);
+    bool is_closing(Handle const&);
+    void close(Handle&);
+    void close(Handle&, CloseCb const&);
+    void ref(Handle&);
+    void unref(Handle&);
+    bool has_ref(Handle const&);
 
-    int send_buffer_size(Handle&, int* value);
-    int recv_buffer_size(Handle&, int* value);
-    int fileno(Handle const&, uv_os_fd_t*);
+    Error send_buffer_size(Handle&, int* value);
+    Error recv_buffer_size(Handle&, int* value);
+    Error fileno(Handle const&, uv_os_fd_t*);
 }

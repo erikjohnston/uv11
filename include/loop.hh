@@ -7,16 +7,17 @@ namespace uvpp {
 
     class Loop {
     public:
-        Loop();
+        Loop(bool use_default=false);
+        ~Loop();
+
+        Loop(Loop const&) = delete;
 
         uv_loop_t& Get();
         uv_loop_t const& Get() const;
 
-    protected:
-        Loop(uv_loop_t*);
-
     private:
-        uv_loop_t* loop;
+        uv_loop_t loop;
+        bool is_default;
     };
 
     extern Loop default_loop;
