@@ -44,11 +44,25 @@ Error uvpp::getaddrinfo(
 }
 
 Error uvpp::getaddrinfo(
-    Loop&,
-    GetAddrInfoRequest&,
-    GetAddrInfoCb const&,
+    Loop& loop,
+    GetAddrInfoRequest& req,
+    GetAddrInfoCb const& callback,
     char const* node, char const* service
-);
+) {
+    req.getaddrinfo_cb = callback;
+    int s = ::uv_getaddrinfo(
+        &loop.Get(),
+        &req.Get(),
+        [](uv_getaddrinfo_t* req_ptr, int status, struct addrinfo* res){
+            GetAddrInfoRequest* r = reinterpret_cast<GetAddrInfoRequest*>(req_ptr->data);
+            r->getaddrinfo_cb(*r, make_error(status), UvAddrInfoPtr(res));
+        },
+        node, service,
+        nullptr
+    );
+
+    return make_error(s);
+}
 
 Error uvpp::ip4_addr(const char* ip, int port, sockaddr_in& addr) {
     int s = ::uv_ip4_addr(ip, port, &addr);
@@ -57,4 +71,43 @@ Error uvpp::ip4_addr(const char* ip, int port, sockaddr_in& addr) {
 
 Error uvpp::ip4_addr(std::string const& ip, int port, sockaddr_in& addr) {
     return ip4_addr(ip.c_str(), port, addr);
+}
+
+Error uvpp::ip4_name(sockaddr_in const* src, std::string& dst) {
+    dst.clear();
+    dst.resize(16, 0);
+    int s = ::uv_ip4_name(src, &dst.front(), dst.size());
+
+    if (s) {
+        dst.clear();
+    } else {
+        auto r = dst.find('\0');
+        if (r == dst.npos) {
+            dst.clear();
+        } else {
+            dst.resize(r);
+        }
+    }
+
+    return make_error(s);
+}
+
+Error uvpp::inet_ntop(int af, const void* src, std::string& dst) {
+    dst.clear();
+    dst.resize(45, 0);
+
+    int s = ::uv_inet_ntop(af, src, &dst.front(), dst.size());
+
+    if (s) {
+        dst.clear();
+    } else {
+        auto r = dst.find('\0');
+        if (r == dst.npos) {
+            dst.clear();
+        } else {
+            dst.resize(r);
+        }
+    }
+
+    return make_error(s);
 }

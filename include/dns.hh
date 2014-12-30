@@ -44,4 +44,9 @@ namespace uvpp {
 
     Error ip4_addr(const char* ip, int port, sockaddr_in& addr);
     Error ip4_addr(std::string const& ip, int port, sockaddr_in& addr);
+
+    Error ip4_name(sockaddr_in const* src, std::string& dst);
+
+    Error inet_ntop(int af, const void* src, std::string&);
+    Error inet_pton(int af, const char* src, void* dst);
 }
