@@ -8,9 +8,6 @@
 
 #include <memory>
 
-auto tcp = std::make_shared<uvpp::Tcp>();
-auto connectRequest = std::make_shared<uvpp::ConnectRequest>();
-
 int main() {
     std::cout
         << uvpp::is_stream<uvpp::Stream>::value
@@ -67,11 +64,14 @@ int main() {
 
     sockaddr_in addr;
 
+    auto tcp = std::make_shared<uvpp::Tcp>();
+    auto connectRequest = std::make_shared<uvpp::ConnectRequest>();
+
     uvpp::ip4_addr("216.58.208.46", 80, addr);
 
     auto e = uvpp::tcp_connect(
         *connectRequest, *tcp, reinterpret_cast<sockaddr&>(addr),
-        [] (uvpp::ConnectRequest&, uvpp::Error e) {
+        [tcp, connectRequest] (uvpp::ConnectRequest&, uvpp::Error e) {
             std::cout << "Connected!" << std::endl;
             if (e) {
                 std::cout << e.message() << std::endl;
@@ -88,7 +88,7 @@ int main() {
                 *write_req,
                 *tcp,
                 uvpp::make_buffer(*get_request),
-                [write_req, get_request] (uvpp::WriteRequest&, uvpp::Error e) {
+                [tcp, write_req, get_request] (uvpp::WriteRequest&, uvpp::Error e) {
                     std::cout << "written" << std::endl;
                     if (e) {
                         std::cout << "Write error: " << e.message() << std::endl;

@@ -30,9 +30,28 @@ set_property(TARGET uv APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
 )
 set_property(TARGET uv PROPERTY IMPORTED_LOCATION ${libuv_install_dir}/lib/libuv.a)
 
-include_directories(include)
+set(
+    SOURCES
+    src/buffer.cpp src/dns.cpp src/handles.cpp src/loop.cpp src/requests.cpp
+    src/streams.cpp src/types.cpp
+)
+add_library(2uvpp ${SOURCES})
+target_link_libraries(2uvpp uv pthread)
 
-file(GLOB SOURCES "src/*.cpp")
+target_include_directories(2uvpp PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
-add_executable(main ${SOURCES})
-target_link_libraries(main uv pthread)
+add_executable(main src/main.cpp)
+target_link_libraries(main 2uvpp uv pthread)
+
+
+install(TARGETS 2uvpp EXPORT 2uvpp-export
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib/static
+)
+install(DIRECTORY include/ DESTINATION include)
+
+install(EXPORT 2uvpp-export NAMESPACE uvpp_ DESTINATION lib/2uvpp)
+
