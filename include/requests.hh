@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.hh"
+#include <functional>
 
 namespace uvpp {
     using ::uv_req_t;
@@ -18,23 +19,20 @@ namespace uvpp {
     public:
         using IsRequest = void;
 
-        Request();
-        virtual ~Request();
+        Request(uv_req_t*, void*);
+        Request(Request const&) = delete;
 
-        virtual uv_req_t& GetRequest() = 0;
-        virtual uv_req_t const& GetRequest() const = 0;
+        uv_req_t& GetRequest();
+        uv_req_t const& GetRequest() const;
+    private:
+        uv_req_t* req_ptr;
     };
 
     template<typename T>
     class RequestBase : public WrappedObject<T>, public Request {
     public:
-        uv_req_t& GetRequest() {
-            return handle_cast<uv_req_t&>(*this);
-        }
-
-        uv_req_t const& GetRequest() const {
-            return handle_cast<uv_req_t const&>(*this);
-        }
+        RequestBase()
+            : Request(reinterpret_cast<uv_req_t*>(&this->Get()), this) {}
     };
 
     class GetAddrInfoRequest;
@@ -46,6 +44,7 @@ namespace uvpp {
     class FsRequest;
     class WorkRequest;
 
+    class UvAddrInfoPtr;
 
     using WriteCb = std::function<void(WriteRequest&, Error)>;
     using ConnectCb = std::function<void(ConnectRequest&, Error)>;
@@ -53,7 +52,7 @@ namespace uvpp {
     using FsCb = std::function<void(FsRequest&)>;
     using WorkCb = std::function<void(WorkRequest&)>;
     using AfterWorkCb = std::function<void(WorkRequest&, int status)>;
-    using GetAddrInfoCb = std::function<void(GetAddrInfoRequest&, Error, ::addrinfo& res)>;
+    using GetAddrInfoCb = std::function<void(GetAddrInfoRequest&, Error, UvAddrInfoPtr res)>;
     using GetNameInfoCb = std::function<void(GetNameInfoRequest&, Error, std::string const& hostname, std::string const& service)>;
 
 

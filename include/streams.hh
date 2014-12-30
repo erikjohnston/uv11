@@ -18,7 +18,7 @@ namespace uvpp {
 
     class Stream : public Handle {
     public:
-        Stream(uv_stream_t*);
+        Stream(uv_stream_t*, void*);
 
         using IsStream = void;
 
@@ -37,7 +37,8 @@ namespace uvpp {
     template<typename T>
     class StreamBase : public WrappedObject<T>, public Stream {
     public:
-        StreamBase() : Stream(reinterpret_cast<uv_stream_t*>(&this->Get())) {}
+        StreamBase(void * data)
+            : Stream(reinterpret_cast<uv_stream_t*>(&this->Get()), data) {}
     };
 
     class Tcp : public StreamBase<uv_tcp_t> { public: Tcp(); Tcp(Loop&); virtual ~Tcp(); };
@@ -64,4 +65,6 @@ namespace uvpp {
 
     bool is_readable(Stream const&);
     bool is_writable(Stream const&);
+
+    Error tcp_connect(ConnectRequest&, Tcp&, sockaddr const&, ConnectCb const&);
 }

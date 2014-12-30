@@ -5,7 +5,8 @@
 using namespace uvpp;
 
 
-Stream::Stream(uv_stream_t* s) : Handle(reinterpret_cast<uv_handle_t*>(s)), stream_ptr(s) {}
+Stream::Stream(uv_stream_t* s, void* data)
+    : Handle(reinterpret_cast<uv_handle_t*>(s), data), stream_ptr(s) {}
 
 Stream::~Stream() {}
 
@@ -13,9 +14,11 @@ uv_stream_t& Stream::GetStream() { return *stream_ptr; }
 uv_stream_t const& Stream::GetStream() const { return *stream_ptr; }
 
 
-Tcp::Tcp() : Tcp(default_loop) {}
+Tcp::Tcp() : Tcp(default_loop) {
+    Get().data = this;
+}
 
-Tcp::Tcp(Loop& loop) {
+Tcp::Tcp(Loop& loop) : StreamBase(this) {
     uv_tcp_init(&loop.Get(), &Get());
 }
 
@@ -54,6 +57,11 @@ Error uvpp::read_start(Stream& stream, AllocCb const& alloc_cb, ReadCb const& re
         }
     );
 
+    if (s) {
+        stream.on_alloc = nullptr;
+        stream.on_read = nullptr;
+    }
+
     return make_error(s);
 }
 
@@ -77,12 +85,20 @@ Error uvpp::listen(Stream& stream, int backlog, ConnectionCb const& connection_c
         }
     );
 
+    if (s) stream.on_connection = nullptr;
+
     return make_error(s);
 }
 
 Error uvpp::accept(Stream& server, Stream& client) {
     int s = ::uv_accept(&server.GetStream(), &client.GetStream());
     return make_error(s);
+}
+
+Error uvpp::write(WriteRequest& req, Stream& stream, Buffer const& buf,
+    WriteCb const& write_cb)
+{
+    return uvpp::write(req, stream, &buf, 1, write_cb);
 }
 
 Error uvpp::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
@@ -95,10 +111,13 @@ Error uvpp::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsign
         bufs, nbufs,
         [] (uv_write_t* r, int status) {
             WriteRequest* w = reinterpret_cast<WriteRequest*>(r->data);
-            w->write_cb(*w, make_error(status));
+            auto write_cb = w->write_cb;
             w->write_cb = nullptr;
+            write_cb(*w, make_error(status));
         }
     );
+
+    if (s) req.write_cb = nullptr;
 
     return make_error(s);
 }
@@ -114,10 +133,13 @@ Error uvpp::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsig
         &send_handle.GetStream(),
         [] (uv_write_t* r, int status) {
             WriteRequest* w = reinterpret_cast<WriteRequest*>(r->data);
-            w->write_cb(*w, make_error(status));
+            auto write_cb = w->write_cb;
             w->write_cb = nullptr;
+            write_cb(*w, make_error(status));
         }
     );
+
+    if (s) req.write_cb = nullptr;
 
     return make_error(s);
 }
@@ -138,4 +160,29 @@ bool uvpp::is_readable(Stream const& stream) {
 
 bool uvpp::is_writable(Stream const& stream) {
     return ::uv_is_writable(&stream.GetStream());
+}
+
+
+#include <iostream>
+
+Error uvpp::tcp_connect(ConnectRequest& req, Tcp& tcp, sockaddr const& addr, ConnectCb const& connect_cb) {
+    req.connect_cb = connect_cb;
+    std::cout << &req << std::endl;
+    int s = ::uv_tcp_connect(
+        &req.Get(),
+        &tcp.Get(),
+        &addr,
+        [] (uv_connect_t* req_ptr, int status) {
+            ConnectRequest* r = reinterpret_cast<ConnectRequest*>(req_ptr->data);
+            std::cout << "Connected! " << req_ptr->data << " " << status <<  " " << (bool)r->connect_cb << std::endl;
+
+            auto connect_cb = r->connect_cb;
+            r->connect_cb = nullptr;
+            connect_cb(*r, make_error(status));
+        }
+    );
+
+    if (s) req.connect_cb = nullptr;
+
+    return make_error(s);
 }

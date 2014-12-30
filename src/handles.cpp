@@ -2,8 +2,8 @@
 
 using namespace uvpp;
 
-Handle::Handle(uv_handle_t* h) : handle_ptr(h){
-    h->data = this;
+Handle::Handle(uv_handle_t* h, void* data) : handle_ptr(h) {
+    h->data = data;
 }
 
 Handle::~Handle() {}

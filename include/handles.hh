@@ -27,7 +27,7 @@ namespace uvpp {
     public:
         using IsHandle = void;
 
-        Handle(uv_handle_t*);
+        Handle(uv_handle_t*, void*);
         virtual ~Handle();
 
         uv_handle_t& GetHandle();
@@ -49,12 +49,14 @@ namespace uvpp {
     template<typename T>
     class HandleBase : public WrappedObject<T>, public Handle {
     public:
+        HandleBase(void* data) : Handle(&this->Get(), data) {}
+
         uv_handle_t& GetHandle() {
-            return handle_cast<uv_handle_t&>(*this);
+            return handle_cast<uv_handle_t>(*this);
         }
 
         uv_handle_t const& GetHandle() const {
-            return handle_cast<uv_handle_t const&>(*this);
+            return handle_cast<uv_handle_t>(*this);
         }
     };
 

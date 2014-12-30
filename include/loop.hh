@@ -5,6 +5,8 @@
 namespace uvpp {
     using ::uv_loop_t;
 
+    using RunMode = ::uv_run_mode;
+
     class Loop {
     public:
         Loop(bool use_default=false);
@@ -17,8 +19,10 @@ namespace uvpp {
 
     private:
         uv_loop_t loop;
-        bool is_default;
+        bool const is_default;
     };
 
     extern Loop default_loop;
+
+    int run(Loop& loop, RunMode mode);
 }
