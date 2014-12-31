@@ -19,9 +19,11 @@ namespace uvpp {
     using ::uv_signal_t;
 
     class Handle;
+    class Poll;
 
     using AllocCb = std::function<void(Handle&, std::size_t suggested_size, uv_buf_t* buf)>;
     using CloseCb = std::function<void(Handle&)>;
+    using PollCb = std::function<void(Poll&, Error, int events)>;
 
     class Handle {
     public:
@@ -49,7 +51,7 @@ namespace uvpp {
     template<typename T>
     class HandleBase : public WrappedObject<T>, public Handle {
     public:
-        HandleBase(void* data) : Handle(&this->Get(), data) {}
+        HandleBase(void* data) : Handle(reinterpret_cast<uv_handle_t*>(&this->Get()), data) {}
 
         uv_handle_t& GetHandle() {
             return handle_cast<uv_handle_t>(*this);
@@ -61,7 +63,15 @@ namespace uvpp {
     };
 
     class Udp : public HandleBase<uv_udp_t> { public: Udp(); };
-    class Poll : public HandleBase<uv_poll_t> { public: Poll(); };
+
+    class Poll : public HandleBase<uv_poll_t> {
+    public:
+        Poll(int fd);
+        Poll(Loop&, int fd);
+
+        PollCb poll_cb;
+    };
+
     class Timer : public HandleBase<uv_timer_t> { public: Timer(); };
     class Prepare : public HandleBase<uv_prepare_t> { public: Prepare(); };
     class Check : public HandleBase<uv_check_t> { public: Check(); };
@@ -72,17 +82,6 @@ namespace uvpp {
     class FsPoll : public HandleBase<uv_fs_poll_t> { public: FsPoll(); };
     class Signal : public HandleBase<uv_signal_t> { public: Signal(); };
 
-//    template<> struct is_handle<Udp> : std::true_type {};
-//    template<> struct is_handle<Poll> : std::true_type {};
-//    template<> struct is_handle<Timer> : std::true_type {};
-//    template<> struct is_handle<Prepare> : std::true_type {};
-//    template<> struct is_handle<Check> : std::true_type {};
-//    template<> struct is_handle<Idle> : std::true_type {};
-//    template<> struct is_handle<Async> : std::true_type {};
-//    template<> struct is_handle<Process> : std::true_type {};
-//    template<> struct is_handle<FsEvent> : std::true_type {};
-//    template<> struct is_handle<FsPoll> : std::true_type {};
-//    template<> struct is_handle<Signal> : std::true_type {};
 
     bool is_active(Handle const&);
     bool is_closing(Handle const&);
@@ -95,4 +94,7 @@ namespace uvpp {
     Error send_buffer_size(Handle&, int* value);
     Error recv_buffer_size(Handle&, int* value);
     Error fileno(Handle const&, uv_os_fd_t*);
+
+    Error poll_start(Poll&, int events, PollCb const&);
+    Error poll_stop(Poll&);
 }
