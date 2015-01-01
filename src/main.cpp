@@ -10,16 +10,16 @@
 
 int main() {
     std::cout
-        << uvpp::is_stream<uvpp::Stream>::value
+        << uv11::is_stream<uv11::Stream>::value
         << std::endl
     ;
 
 
-    auto addrRequest = std::make_shared<uvpp::GetAddrInfoRequest>();
-    uvpp::getaddrinfo(
-        uvpp::default_loop,
+    auto addrRequest = std::make_shared<uv11::GetAddrInfoRequest>();
+    uv11::getaddrinfo(
+        uv11::default_loop,
         *addrRequest,
-        [] (uvpp::GetAddrInfoRequest&, uvpp::Error e, uvpp::UvAddrInfoPtr res) {
+        [] (uv11::GetAddrInfoRequest&, uv11::Error e, uv11::UvAddrInfoPtr res) {
             if (e) {
                 std::cout << "Addr info error: " << e.message() << std::endl;
             } else {
@@ -36,7 +36,7 @@ int main() {
                         break;
                     }
 
-                    auto err = uvpp::inet_ntop(
+                    auto err = uv11::inet_ntop(
                         a.ai_family,
                         &reinterpret_cast<sockaddr_in*>(a.ai_addr)->sin_addr,
                         ip
@@ -64,31 +64,31 @@ int main() {
 
     sockaddr_in addr;
 
-    auto tcp = std::make_shared<uvpp::Tcp>();
-    auto connectRequest = std::make_shared<uvpp::ConnectRequest>();
+    auto tcp = std::make_shared<uv11::Tcp>();
+    auto connectRequest = std::make_shared<uv11::ConnectRequest>();
 
-    uvpp::ip4_addr("216.58.208.46", 80, addr);
+    uv11::ip4_addr("216.58.208.46", 80, addr);
 
-    auto e = uvpp::tcp_connect(
+    auto e = uv11::tcp_connect(
         *connectRequest, *tcp, reinterpret_cast<sockaddr&>(addr),
-        [tcp, connectRequest] (uvpp::ConnectRequest&, uvpp::Error e) {
+        [tcp, connectRequest] (uv11::ConnectRequest&, uv11::Error e) {
             std::cout << "Connected!" << std::endl;
             if (e) {
                 std::cout << e.message() << std::endl;
             }
 
-            auto write_req = std::make_shared<uvpp::WriteRequest>();
+            auto write_req = std::make_shared<uv11::WriteRequest>();
 
             char temp[] =  "GET / HTTP/1.1\r\nContent-Length: 0\r\nConnection: Close\r\n\r\n";
             auto get_request = std::make_shared<std::vector<char>>(
                 std::begin(temp), std::end(temp)
             );
 
-            uvpp::write(
+            uv11::write(
                 *write_req,
                 *tcp,
-                uvpp::make_buffer(*get_request),
-                [tcp, write_req, get_request] (uvpp::WriteRequest&, uvpp::Error e) {
+                uv11::make_buffer(*get_request),
+                [tcp, write_req, get_request] (uv11::WriteRequest&, uv11::Error e) {
                     std::cout << "written" << std::endl;
                     if (e) {
                         std::cout << "Write error: " << e.message() << std::endl;
@@ -98,13 +98,13 @@ int main() {
         }
     );
 
-    uvpp::read_start(
+    uv11::read_start(
         *tcp,
-        [] (uvpp::Handle&, std::size_t suggested_size, uvpp::uv_buf_t* buf) {
+        [] (uv11::Handle&, std::size_t suggested_size, uv11::uv_buf_t* buf) {
             buf->base = new char[suggested_size];
             buf->len = suggested_size;
         },
-        [](uvpp::Stream&, uvpp::Buffer const& buf, ::ssize_t nread, uvpp::Error e) {
+        [](uv11::Stream&, uv11::Buffer const& buf, ::ssize_t nread, uv11::Error e) {
             if (e) {
                 std::cout << "Read error: " << e.message() << std::endl;
             } else {
@@ -119,5 +119,5 @@ int main() {
         std::cout << e.message() << std::endl;
     }
 
-    return uvpp::run(uvpp::default_loop, uvpp::RunMode::UV_RUN_DEFAULT);
+    return uv11::run(uv11::default_loop, uv11::RunMode::UV_RUN_DEFAULT);
 }

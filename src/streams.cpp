@@ -2,7 +2,7 @@
 
 #include "loop.hh"
 
-using namespace uvpp;
+using namespace uv11;
 
 
 Stream::Stream(uv_stream_t* s, void* data)
@@ -26,7 +26,7 @@ Tcp::~Tcp() {
     if (!is_closing()) close();
 }
 
-Error uvpp::read_start(Stream& stream, AllocCb const& alloc_cb, ReadCb const& read_cb) {
+Error uv11::read_start(Stream& stream, AllocCb const& alloc_cb, ReadCb const& read_cb) {
     stream.on_alloc = alloc_cb;
     stream.on_read = read_cb;
 
@@ -65,7 +65,7 @@ Error uvpp::read_start(Stream& stream, AllocCb const& alloc_cb, ReadCb const& re
     return make_error(s);
 }
 
-Error uvpp::read_stop(Stream& stream) {
+Error uv11::read_stop(Stream& stream) {
     stream.on_alloc = nullptr;
     stream.on_read = nullptr;
 
@@ -73,7 +73,7 @@ Error uvpp::read_stop(Stream& stream) {
     return make_error(s);
 }
 
-Error uvpp::listen(Stream& stream, int backlog, ConnectionCb const& connection_cb) {
+Error uv11::listen(Stream& stream, int backlog, ConnectionCb const& connection_cb) {
     stream.on_connection = connection_cb;
 
     int s = ::uv_listen(
@@ -90,18 +90,18 @@ Error uvpp::listen(Stream& stream, int backlog, ConnectionCb const& connection_c
     return make_error(s);
 }
 
-Error uvpp::accept(Stream& server, Stream& client) {
+Error uv11::accept(Stream& server, Stream& client) {
     int s = ::uv_accept(&server.GetStream(), &client.GetStream());
     return make_error(s);
 }
 
-Error uvpp::write(WriteRequest& req, Stream& stream, Buffer const& buf,
+Error uv11::write(WriteRequest& req, Stream& stream, Buffer const& buf,
     WriteCb const& write_cb)
 {
-    return uvpp::write(req, stream, &buf, 1, write_cb);
+    return uv11::write(req, stream, &buf, 1, write_cb);
 }
 
-Error uvpp::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
+Error uv11::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
     WriteCb const& write_cb)
 {
     req.write_cb = write_cb;
@@ -122,7 +122,7 @@ Error uvpp::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsign
     return make_error(s);
 }
 
-Error uvpp::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
+Error uv11::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
     Stream& send_handle, WriteCb const& write_cb)
 {
     req.write_cb = write_cb;
@@ -144,7 +144,7 @@ Error uvpp::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsig
     return make_error(s);
 }
 
-Error uvpp::try_write(Stream& stream, Buffer const bufs[], unsigned int nbufs) {
+Error uv11::try_write(Stream& stream, Buffer const bufs[], unsigned int nbufs) {
     int s = ::uv_try_write(
         &stream.GetStream(),
         bufs,
@@ -154,18 +154,18 @@ Error uvpp::try_write(Stream& stream, Buffer const bufs[], unsigned int nbufs) {
     return make_error(s);
 }
 
-bool uvpp::is_readable(Stream const& stream) {
+bool uv11::is_readable(Stream const& stream) {
     return ::uv_is_readable(&stream.GetStream());
 }
 
-bool uvpp::is_writable(Stream const& stream) {
+bool uv11::is_writable(Stream const& stream) {
     return ::uv_is_writable(&stream.GetStream());
 }
 
 
 #include <iostream>
 
-Error uvpp::tcp_connect(ConnectRequest& req, Tcp& tcp, sockaddr const& addr, ConnectCb const& connect_cb) {
+Error uv11::tcp_connect(ConnectRequest& req, Tcp& tcp, sockaddr const& addr, ConnectCb const& connect_cb) {
     req.connect_cb = connect_cb;
     std::cout << &req << std::endl;
     int s = ::uv_tcp_connect(

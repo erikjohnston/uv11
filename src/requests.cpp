@@ -1,6 +1,6 @@
 #include "requests.hh"
 
-using namespace uvpp;
+using namespace uv11;
 
 Request::Request(uv_req_t * r, void* data) : req_ptr(r) {
     r->data = data;

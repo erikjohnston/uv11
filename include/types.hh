@@ -7,7 +7,7 @@
 #include <system_error>
 
 
-namespace uvpp {
+namespace uv11 {
     using ::uv_handle_t;
     using ::uv_stream_t;
     using ::uv_req_t;

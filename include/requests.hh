@@ -3,7 +3,7 @@
 #include "types.hh"
 #include <functional>
 
-namespace uvpp {
+namespace uv11 {
     using ::uv_req_t;
 
     using ::uv_getaddrinfo_t;

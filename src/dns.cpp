@@ -1,7 +1,7 @@
 #include <loop.hh>
 #include "dns.hh"
 
-using namespace uvpp;
+using namespace uv11;
 
 UvAddrInfoPtr::UvAddrInfoPtr(addrinfo* p) : ptr(p) {}
 
@@ -21,7 +21,7 @@ UvAddrInfoPtr::UvAddrInfoPtr(UvAddrInfoPtr&& other) : ptr(other.ptr) {
 }
 
 
-Error uvpp::getaddrinfo(
+Error uv11::getaddrinfo(
     Loop& loop,
     GetAddrInfoRequest& req,
     GetAddrInfoCb const& callback,
@@ -43,7 +43,7 @@ Error uvpp::getaddrinfo(
     return make_error(s);
 }
 
-Error uvpp::getaddrinfo(
+Error uv11::getaddrinfo(
     Loop& loop,
     GetAddrInfoRequest& req,
     GetAddrInfoCb const& callback,
@@ -64,16 +64,16 @@ Error uvpp::getaddrinfo(
     return make_error(s);
 }
 
-Error uvpp::ip4_addr(const char* ip, int port, sockaddr_in& addr) {
+Error uv11::ip4_addr(const char* ip, int port, sockaddr_in& addr) {
     int s = ::uv_ip4_addr(ip, port, &addr);
     return make_error(s);
 }
 
-Error uvpp::ip4_addr(std::string const& ip, int port, sockaddr_in& addr) {
+Error uv11::ip4_addr(std::string const& ip, int port, sockaddr_in& addr) {
     return ip4_addr(ip.c_str(), port, addr);
 }
 
-Error uvpp::ip4_name(sockaddr_in const* src, std::string& dst) {
+Error uv11::ip4_name(sockaddr_in const* src, std::string& dst) {
     dst.clear();
     dst.resize(16, 0);
     int s = ::uv_ip4_name(src, &dst.front(), dst.size());
@@ -92,7 +92,7 @@ Error uvpp::ip4_name(sockaddr_in const* src, std::string& dst) {
     return make_error(s);
 }
 
-Error uvpp::inet_ntop(int af, const void* src, std::string& dst) {
+Error uv11::inet_ntop(int af, const void* src, std::string& dst) {
     dst.clear();
     dst.resize(45, 0);
 

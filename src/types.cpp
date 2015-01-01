@@ -1,6 +1,6 @@
 #include "types.hh"
 
-using namespace uvpp;
+using namespace uv11;
 
 
 class UvErrorCategory : public std::error_category {
@@ -11,11 +11,11 @@ public:
 
 static UvErrorCategory uv_error_category;
 
-std::error_category const& uvpp::uv_category() {
+std::error_category const& uv11::uv_category() {
     return uv_error_category;
 }
 
-std::error_code uvpp::make_error(int s) {
+std::error_code uv11::make_error(int s) {
     return Error(s, uv_category());
 }
 

@@ -1,10 +1,10 @@
 #include "buffer.hh"
 
-using namespace uvpp;
+using namespace uv11;
 
-Buffer uvpp::make_buffer(char * base, unsigned int len) {
+Buffer uv11::make_buffer(char * base, unsigned int len) {
     return ::uv_buf_init(base, len);
 }
-Buffer uvpp::make_buffer(std::vector<char>& v) {
+Buffer uv11::make_buffer(std::vector<char>& v) {
     return ::uv_buf_init(v.data(), v.size());
 }

@@ -8,7 +8,7 @@
 
 #include "uv.h"
 
-namespace uvpp {
+namespace uv11 {
     using ::uv_buf_t;
     using Buffer = uv_buf_t;
 

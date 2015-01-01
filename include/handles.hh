@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <functional>
 
-namespace uvpp {
+namespace uv11 {
     using ::uv_udp_t;
     using ::uv_poll_t;
     using ::uv_timer_t;

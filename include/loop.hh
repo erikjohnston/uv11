@@ -2,7 +2,7 @@
 
 #include "uv.h"
 
-namespace uvpp {
+namespace uv11 {
     using ::uv_loop_t;
 
     using RunMode = ::uv_run_mode;

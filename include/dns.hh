@@ -6,7 +6,7 @@
 
 #include "uv.h"
 
-namespace uvpp {
+namespace uv11 {
     using ::addrinfo;
 
     // Will automatically free the ptr if non null using ::uv_freeaddrinfo

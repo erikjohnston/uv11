@@ -2,6 +2,6 @@
 
 #include <functional>
 
-namespace uvpp {
+namespace uv11 {
 
 }

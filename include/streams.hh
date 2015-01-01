@@ -6,7 +6,7 @@
 #include "requests.hh"
 #include "types.hh"
 
-namespace uvpp {
+namespace uv11 {
     using ::uv_tcp_t;
     using ::uv_pipe_t;
     using ::uv_tty_t;
