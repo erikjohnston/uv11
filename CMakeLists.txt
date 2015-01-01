@@ -18,7 +18,7 @@ add_library(2uvppStatic STATIC ${SOURCES})
 
 function(setup_2uvpp_lib target)
     add_dependencies(${target} ${LIBUV_DEPENDENCY})
-    target_link_libraries(${target} LibUV)
+    target_link_libraries(${target} uv)
 
     target_include_directories(${target} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
