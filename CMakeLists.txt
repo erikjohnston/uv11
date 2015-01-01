@@ -13,25 +13,31 @@ set(
     src/streams.cpp src/types.cpp
 )
 
-add_library(uv11 SHARED ${SOURCES})
-add_library(uv11Static STATIC ${SOURCES})
+add_library(uv11Objects OBJECT ${SOURCES})
+add_dependencies(uv11Objects ${LIBUV_DEPENDENCY})
+target_include_directories(uv11Objects PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_include_directories(uv11Objects PRIVATE ${LIBUV_INCLUDE_DIRS})
+target_compile_options(uv11Objects PUBLIC "-std=c++11" "-fPIC")
 
-function(setup_uv11_lib target)
-    add_dependencies(${target} ${LIBUV_DEPENDENCY})
-    target_link_libraries(${target} uv)
 
-    target_include_directories(${target} PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-    )
-endfunction(setup_uv11_lib)
+add_library(uv11 SHARED $<TARGET_OBJECTS:uv11Objects>)
+target_link_libraries(uv11 uv)
+target_include_directories(uv11 INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_compile_options(uv11 PUBLIC "-std=c++11")
 
-setup_uv11_lib(uv11)
-setup_uv11_lib(uv11Static)
-
-add_executable(main src/main.cpp)
-target_include_directories(main PRIVATE ${LIBUV_INCLUDE_DIRS})
-target_link_libraries(main uv11)
+add_library(uv11Static STATIC $<TARGET_OBJECTS:uv11Objects>)
+target_link_libraries(uv11Static uv)
+target_include_directories(uv11Static INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_compile_options(uv11Static PUBLIC "-std=c++11")
 
 install(TARGETS uv11 uv11Static EXPORT uv11Config
     LIBRARY DESTINATION lib
@@ -40,3 +46,6 @@ install(TARGETS uv11 uv11Static EXPORT uv11Config
 install(DIRECTORY include/ DESTINATION include)
 
 install(EXPORT uv11Config DESTINATION lib/uv11)
+
+add_executable(main src/main.cpp)
+target_link_libraries(main uv11)
