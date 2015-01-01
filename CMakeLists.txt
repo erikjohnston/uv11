@@ -13,10 +13,10 @@ set(
     src/streams.cpp src/types.cpp
 )
 
-add_library(2uvpp SHARED ${SOURCES})
-add_library(2uvppStatic STATIC ${SOURCES})
+add_library(uv11 SHARED ${SOURCES})
+add_library(uv11Static STATIC ${SOURCES})
 
-function(setup_2uvpp_lib target)
+function(setup_uv11_lib target)
     add_dependencies(${target} ${LIBUV_DEPENDENCY})
     target_link_libraries(${target} uv)
 
@@ -24,19 +24,19 @@ function(setup_2uvpp_lib target)
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     )
-endfunction(setup_2uvpp_lib)
+endfunction(setup_uv11_lib)
 
-setup_2uvpp_lib(2uvpp)
-setup_2uvpp_lib(2uvppStatic)
+setup_uv11_lib(uv11)
+setup_uv11_lib(uv11Static)
 
 add_executable(main src/main.cpp)
 target_include_directories(main PRIVATE ${LIBUV_INCLUDE_DIRS})
-target_link_libraries(main 2uvpp)
+target_link_libraries(main uv11)
 
-install(TARGETS 2uvpp 2uvppStatic EXPORT 2uvppConfig
+install(TARGETS uv11 uv11Static EXPORT uv11Config
     LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib/static
+    ARCHIVE DESTINATION lib
 )
 install(DIRECTORY include/ DESTINATION include)
 
-install(EXPORT 2uvppConfig DESTINATION lib/2uvpp)
+install(EXPORT uv11Config DESTINATION lib/uv11)
