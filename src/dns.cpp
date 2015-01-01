@@ -1,5 +1,5 @@
-#include <loop.hh>
-#include "dns.hh"
+#include "uv11/loop.hh"
+#include "uv11/dns.hh"
 
 using namespace uv11;
 

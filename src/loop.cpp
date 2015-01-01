@@ -1,6 +1,6 @@
-#include "loop.hh"
+#include "uv11/loop.hh"
 
-#include "types.hh"
+#include "uv11/types.hh"
 
 using namespace uv11;
 

@@ -43,7 +43,7 @@ install(TARGETS uv11 uv11Static EXPORT uv11Config
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
 )
-install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY include/uv11 DESTINATION include)
 
 install(EXPORT uv11Config DESTINATION lib/uv11)
 

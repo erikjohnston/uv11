@@ -1,6 +1,6 @@
-#include "streams.hh"
+#include "uv11/streams.hh"
 
-#include "loop.hh"
+#include "uv11/loop.hh"
 
 using namespace uv11;
 

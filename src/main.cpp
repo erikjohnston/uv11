@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include "dns.hh"
-#include "types.hh"
-#include "streams.hh"
-#include "loop.hh"
-#include "requests.hh"
+#include "uv11/dns.hh"
+#include "uv11/types.hh"
+#include "uv11/streams.hh"
+#include "uv11/loop.hh"
+#include "uv11/requests.hh"
 
 #include <memory>
 

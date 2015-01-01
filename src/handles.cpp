@@ -1,6 +1,6 @@
-#include <requests.hh>
-#include <loop.hh>
-#include "handles.hh"
+#include "uv11/requests.hh"
+#include "uv11/loop.hh"
+#include "uv11/handles.hh"
 
 using namespace uv11;
 
