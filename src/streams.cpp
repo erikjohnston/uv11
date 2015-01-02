@@ -111,9 +111,9 @@ Error uv11::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsign
         bufs, nbufs,
         [] (uv_write_t* r, int status) {
             WriteRequest* w = reinterpret_cast<WriteRequest*>(r->data);
-            auto write_cb = w->write_cb;
+            auto w_cb = w->write_cb;
             w->write_cb = nullptr;
-            write_cb(*w, make_error(status));
+            w_cb(*w, make_error(status));
         }
     );
 
@@ -133,9 +133,9 @@ Error uv11::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsig
         &send_handle.GetStream(),
         [] (uv_write_t* r, int status) {
             WriteRequest* w = reinterpret_cast<WriteRequest*>(r->data);
-            auto write_cb = w->write_cb;
+            auto w_cb = w->write_cb;
             w->write_cb = nullptr;
-            write_cb(*w, make_error(status));
+            w_cb(*w, make_error(status));
         }
     );
 
@@ -163,22 +163,18 @@ bool uv11::is_writable(Stream const& stream) {
 }
 
 
-#include <iostream>
-
 Error uv11::tcp_connect(ConnectRequest& req, Tcp& tcp, sockaddr const& addr, ConnectCb const& connect_cb) {
     req.connect_cb = connect_cb;
-    std::cout << &req << std::endl;
     int s = ::uv_tcp_connect(
         &req.Get(),
         &tcp.Get(),
         &addr,
         [] (uv_connect_t* req_ptr, int status) {
             ConnectRequest* r = reinterpret_cast<ConnectRequest*>(req_ptr->data);
-            std::cout << "Connected! " << req_ptr->data << " " << status <<  " " << (bool)r->connect_cb << std::endl;
 
-            auto connect_cb = r->connect_cb;
+            auto conn_cb = r->connect_cb;
             r->connect_cb = nullptr;
-            connect_cb(*r, make_error(status));
+            conn_cb(*r, make_error(status));
         }
     );
 

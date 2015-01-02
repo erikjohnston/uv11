@@ -17,7 +17,7 @@ namespace uv11 {
         Buffer(uv_buf_t && t);
     };
 
-    Buffer make_buffer(std::vector<char>&);
+    Buffer make_buffer(std::vector<char>&); // vector size *must* fit into unsigned int.
     Buffer make_buffer(char*, unsigned int);
 
     // Allow people to iterate over uv_buf_t. These are found via ADL.

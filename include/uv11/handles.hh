@@ -68,6 +68,7 @@ namespace uv11 {
     public:
         Poll(int fd);
         Poll(Loop&, int fd);
+        virtual ~Poll();
 
         PollCb poll_cb;
     };

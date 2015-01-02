@@ -89,11 +89,13 @@ Poll::Poll(Loop& loop, int fd) : HandleBase(this) {
     ::uv_poll_init(&loop.Get(), &this->Get(), fd);
 }
 
+Poll::~Poll() {}
+
 Error uv11::poll_start(Poll& poll, int events, PollCb const& poll_cb) {
     poll.poll_cb = poll_cb;
-    int s = ::uv_poll_start(&poll.Get(), events, [](uv_poll_t* ptr, int status, int events) {
+    int s = ::uv_poll_start(&poll.Get(), events, [](uv_poll_t* ptr, int status, int ev) {
         Poll* p = reinterpret_cast<Poll*>(ptr->data);
-        p->poll_cb(*p, make_error(status), events);
+        p->poll_cb(*p, make_error(status), ev);
     });
 
     return make_error(s);

@@ -6,7 +6,7 @@ Buffer uv11::make_buffer(char * base, unsigned int len) {
     return ::uv_buf_init(base, len);
 }
 Buffer uv11::make_buffer(std::vector<char>& v) {
-    return ::uv_buf_init(v.data(), v.size());
+    return ::uv_buf_init(v.data(), static_cast<unsigned int>(v.size()));
 }
 
 Buffer::Buffer() {}
