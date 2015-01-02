@@ -28,8 +28,6 @@ if (NOT LIBUV_FOUND AND NOT LIBUV_STATIC_FOUND)
         INSTALL_COMMAND make install
     )
 
-    # pkg_check_modules(PC_LIBUV QUIET libuv>=${LIBUV_FIND_VERSION})
-
     # Set up all the different variables pkg_check_modules would
     set(LIBUV_INCLUDE_DIRS ${LIBUV_EXTERNAL_PREFIX}/include)
     set(LIBUV_LIBRARY_DIRS ${LIBUV_EXTERNAL_PREFIX}/lib)
@@ -42,14 +40,15 @@ if (NOT LIBUV_FOUND AND NOT LIBUV_STATIC_FOUND)
     set(LIBUV_DEPENDENCY libuv-proj)
     set(LIBUV_FOUND True)
     set(LIBUV_LIBDIR ${LIBUV_EXTERNAL_PREFIX}/lib)
+
 endif(NOT LIBUV_FOUND AND NOT LIBUV_STATIC_FOUND)
 
 set(extra_libs ${LIBUV_LIBRARIES})
 list(REMOVE_ITEM extra_libs uv)
-MESSAGE(STATUS ${extra_libs})
 
 if (LIBUV_FOUND)
     add_library(uv SHARED IMPORTED GLOBAL)
+    add_dependencies(uv libuv-proj)
     set(
         LIBUV_LIBRARY
         "${LIBUV_LIBDIR}/${CMAKE_SHARED_LIBRARY_PREFIX}uv${CMAKE_SHARED_LIBRARY_SUFFIX}"
@@ -59,20 +58,19 @@ if (LIBUV_FOUND)
         INTERFACE_LINK_LIBRARIES "${extra_libs}"
         IMPORTED_LOCATION "${LIBUV_LIBRARY}"
     )
-endif(LIBUV_FOUND)
 
-if (LIBUV_STATIC_FOUND)
     add_library(uvStatic STATIC IMPORTED GLOBAL)
+    add_dependencies(uvStatic libuv-proj)
     set(
         LIBUV_STATIC_LIBRARY
-        ${LIBUV_STATIC_LIBDIR} "/" ${CMAKE_STATIC_LIBRARY_PREFIX} "uv" ${CMAKE_STATIC_LIBRARY_SUFFIX}
+        "${LIBUV_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}uv${CMAKE_STATIC_LIBRARY_SUFFIX}"
     )
     set_target_properties(uvStatic PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${LIBUV_STATIC_INCLUDE_DIRS}"
+        INTERFACE_INCLUDE_DIRECTORIES "${LIBUV_INCLUDE_DIRS}"
         INTERFACE_LINK_LIBRARIES "${extra_libs}"
         IMPORTED_LOCATION "${LIBUV_STATIC_LIBRARY}"
     )
-endif(LIBUV_STATIC_FOUND)
+endif(LIBUV_FOUND)
 
 include(FindPackageHandleStandardArgs)
 
