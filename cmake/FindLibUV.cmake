@@ -11,8 +11,12 @@ if (NOT LIBUV_FOUND AND NOT LIBUV_STATIC_FOUND)
 
     include(ExternalProject)
 
+    if (NOT EXTERNAL_DIR)
+        set(EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/externals)
+    endif (NOT EXTERNAL_DIR)
+
     if (NOT LIBUV_EXTERNAL_PREFIX)
-        set (LIBUV_EXTERNAL_PREFIX ${CMAKE_SOURCE_DIR}/externals/libuv)
+        set (LIBUV_EXTERNAL_PREFIX ${EXTERNAL_DIR}/libuv)
     endif (NOT LIBUV_EXTERNAL_PREFIX)
 
     # Right, lets download it then!
@@ -27,6 +31,8 @@ if (NOT LIBUV_FOUND AND NOT LIBUV_STATIC_FOUND)
         BUILD_IN_SOURCE 1
         INSTALL_COMMAND make install
     )
+
+    FILE(MAKE_DIRECTORY ${LIBUV_EXTERNAL_PREFIX}/include)
 
     # Set up all the different variables pkg_check_modules would
     set(LIBUV_INCLUDE_DIRS ${LIBUV_EXTERNAL_PREFIX}/include)
