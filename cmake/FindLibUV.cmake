@@ -6,7 +6,7 @@ pkg_check_modules(LIBUV QUIET libuv>=${LIBUV_FIND_VERSION})
 if (NOT LIBUV_FOUND AND NOT LIBUV_STATIC_FOUND)
     MESSAGE(STATUS "Pulling in LibUV from github")
     if (NOT LIBUV_FIND_VERSION)
-        set(LIBUV_FIND_VERSION "v1.1.0")
+        set(LIBUV_FIND_VERSION "1.1.0")
     endif (NOT LIBUV_FIND_VERSION)
 
     include(ExternalProject)
@@ -22,9 +22,9 @@ if (NOT LIBUV_FOUND AND NOT LIBUV_STATIC_FOUND)
     # Right, lets download it then!
     ExternalProject_Add (
         libuv-proj
-        GIT_REPOSITORY "git@github.com:libuv/libuv.git"
-        GIT_TAG ${LIBUV_FIND_VERSION}
+        URL "https://github.com/libuv/libuv/tarball/v${LIBUV_FIND_VERSION}"
         INSTALL_DIR ${LIBUV_EXTERNAL_PREFIX}
+        DOWNLOAD_NAME "uv11-${LIBUV_FIND_VERSION}.tar.gz"
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND ./autogen.sh COMMAND ./configure --prefix=<INSTALL_DIR>
         BUILD_COMMAND make
