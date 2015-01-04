@@ -8,6 +8,9 @@ Buffer uv11::make_buffer(char * base, unsigned int len) {
 Buffer uv11::make_buffer(std::vector<char>& v) {
     return ::uv_buf_init(v.data(), static_cast<unsigned int>(v.size()));
 }
+Buffer uv11::make_buffer(std::string& s) {
+    return ::uv_buf_init(&s.front(), static_cast<unsigned int>(s.size()));
+}
 
 Buffer::Buffer() {}
 Buffer::Buffer(uv_buf_t const &t) : uv_buf_t(t) {}
