@@ -20,6 +20,7 @@ namespace uv11 {
 
     class Handle;
     class Poll;
+    class Async;
 
     using AllocCb = std::function<void(Handle&, std::size_t suggested_size, uv_buf_t* buf)>;
     using CloseCb = std::function<void(Handle&)>;
