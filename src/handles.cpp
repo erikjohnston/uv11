@@ -91,6 +91,16 @@ Poll::Poll(Loop& loop, int fd) : HandleBase(this) {
 
 Poll::~Poll() {}
 
+
+Async::Async(Loop& loop, AsyncCb const& cb) : HandleBase(this), async_cb(cb) {
+    ::uv_async_init(&loop.Get(), &this->Get(), [] (::uv_async_t* handle ) {
+        Async* a = reinterpret_cast<Async*>(handle->data);
+        a->async_cb(*a);
+    });
+}
+
+Async::~Async() {}
+
 Error uv11::poll_start(Poll& poll, int events, PollCb const& poll_cb) {
     poll.poll_cb = poll_cb;
     int s = ::uv_poll_start(&poll.Get(), events, [](uv_poll_t* ptr, int status, int ev) {
@@ -105,6 +115,13 @@ Error uv11::poll_stop(Poll& poll) {
     int s = ::uv_poll_stop(&poll.Get());
 
     poll.poll_cb = nullptr;
+
+    return make_error(s);
+}
+
+
+Error uv11::async_send(Async& async) {
+    int s = ::uv_async_send(&async.Get());
 
     return make_error(s);
 }

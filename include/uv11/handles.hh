@@ -24,6 +24,7 @@ namespace uv11 {
     using AllocCb = std::function<void(Handle&, std::size_t suggested_size, uv_buf_t* buf)>;
     using CloseCb = std::function<void(Handle&)>;
     using PollCb = std::function<void(Poll&, Error, int events)>;
+    using AsyncCb = std::function<void(Handle&)>;
 
     class Handle {
     public:
@@ -73,11 +74,18 @@ namespace uv11 {
         PollCb poll_cb;
     };
 
+    class Async : public HandleBase<uv_async_t> {
+    public:
+        Async(Loop&, AsyncCb const&);
+        virtual ~Async();
+
+        AsyncCb async_cb;
+    };
+
     class Timer : public HandleBase<uv_timer_t> { public: Timer(); };
     class Prepare : public HandleBase<uv_prepare_t> { public: Prepare(); };
     class Check : public HandleBase<uv_check_t> { public: Check(); };
     class Idle : public HandleBase<uv_idle_t> { public: Idle(); };
-    class Async : public HandleBase<uv_async_t> { public: Async(); };
     class Process : public HandleBase<uv_process_t> { public: Process(); };
     class FsEvent : public HandleBase<uv_fs_event_t> { public: FsEvent(); };
     class FsPoll : public HandleBase<uv_fs_poll_t> { public: FsPoll(); };
@@ -98,4 +106,6 @@ namespace uv11 {
 
     Error poll_start(Poll&, int events, PollCb const&);
     Error poll_stop(Poll&);
+
+    Error async_send(Async&);
 }
