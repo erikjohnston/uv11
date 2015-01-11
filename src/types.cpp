@@ -1,5 +1,7 @@
 #include "uv11/types.hh"
 
+#include "uv.h"
+
 using namespace uv11;
 
 

@@ -2,15 +2,12 @@
 
 #include "buffer.hh"
 #include "loop.hh"
+#include "internals.hh"
 #include "handles.hh"
 #include "requests.hh"
 #include "types.hh"
 
 namespace uv11 {
-    using ::uv_tcp_t;
-    using ::uv_pipe_t;
-    using ::uv_tty_t;
-
     class Stream;
 
     using ReadCb = std::function<void(Stream&, Buffer const&, ::ssize_t nread, Error)>;
@@ -19,13 +16,10 @@ namespace uv11 {
     class Stream : public Handle {
     public:
         Stream(uv_stream_t*, void*);
-
-        using IsStream = void;
+        virtual ~Stream();
 
         uv_stream_t& GetStream();
         uv_stream_t const& GetStream() const;
-
-        virtual ~Stream();
 
         ReadCb on_read;
         ConnectionCb on_connection;
@@ -34,20 +28,10 @@ namespace uv11 {
         uv_stream_t* stream_ptr;
     };
 
-    template<typename T>
-    class StreamBase : public WrappedObject<T>, public Stream {
-    public:
-        StreamBase(void * data)
-            : Stream(reinterpret_cast<uv_stream_t*>(&this->Get()), data) {}
-    };
 
-    class Tcp : public StreamBase<uv_tcp_t> { public: Tcp(); Tcp(Loop&); virtual ~Tcp(); };
-    class Pipe : public StreamBase<uv_pipe_t> { public: Pipe(); };
-    class Tty : public StreamBase<uv_tty_t> { public: Tty(); };
+//    class Pipe : public StreamBase<uv_pipe_t> { public: Pipe(); };
+//    class Tty : public StreamBase<uv_tty_t> { public: Tty(); };
 
-//    template<> struct is_stream<Tcp> : std::true_type {};
-//    template<> struct is_stream<Pipe> : std::true_type {};
-//    template<> struct is_stream<Tty> : std::true_type {};
 
     Error read_start(Stream&, AllocCb const&, ReadCb const&);
     Error read_stop(Stream&);
@@ -66,5 +50,11 @@ namespace uv11 {
     bool is_readable(Stream const&);
     bool is_writable(Stream const&);
 
-    Error tcp_connect(ConnectRequest&, Tcp&, sockaddr const&, ConnectCb const&);
+
+    // INTERNALS
+    template<typename T>
+    class StreamBase : public WrappedObject<T>, public Stream {
+    public:
+        StreamBase(void * data) : Stream(reinterpret_cast<uv_stream_t*>(&this->Get()), data) {}
+    };
 }

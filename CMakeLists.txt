@@ -19,7 +19,7 @@ endif(NOT LIBUV_FOUND)
 set(
     SOURCES
     src/buffer.cpp src/dns.cpp src/handles.cpp src/loop.cpp src/requests.cpp
-    src/streams.cpp src/types.cpp
+    src/streams.cpp src/types.cpp src/tcp.cpp src/poll.cpp src/async.cpp
 )
 
 add_library(uv11Objects OBJECT ${SOURCES})

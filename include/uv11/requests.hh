@@ -1,24 +1,15 @@
 #pragma once
 
+#include "uv.h"
+
 #include "types.hh"
+#include "internals.hh"
+
 #include <functional>
 
 namespace uv11 {
-    using ::uv_req_t;
-
-    using ::uv_getaddrinfo_t;
-    using ::uv_getnameinfo_t;
-    using ::uv_shutdown_t;
-    using ::uv_write_t;
-    using ::uv_connect_t;
-    using ::uv_udp_send_t;
-    using ::uv_fs_t;
-    using ::uv_work_t;
-
     class Request {
     public:
-        using IsRequest = void;
-
         Request(uv_req_t*, void*);
         Request(Request const&) = delete;
 

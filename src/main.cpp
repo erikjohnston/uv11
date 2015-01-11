@@ -3,17 +3,13 @@
 #include "uv11/dns.hh"
 #include "uv11/types.hh"
 #include "uv11/streams.hh"
+#include "uv11/streams/tcp.hh"
 #include "uv11/loop.hh"
 #include "uv11/requests.hh"
 
 #include <memory>
 
 int main() {
-    std::cout
-        << uv11::is_stream<uv11::Stream>::value
-        << std::endl
-    ;
-
 
     auto addrRequest = std::make_shared<uv11::GetAddrInfoRequest>();
     uv11::getaddrinfo(
