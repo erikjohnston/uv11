@@ -108,6 +108,12 @@ Error uv11::write(WriteRequest& req, Stream& stream, Buffer const bufs[], unsign
     return make_error(s);
 }
 
+Error uv11::write2(WriteRequest& req, Stream& stream, Buffer const& buf, Stream& send_handle,
+    WriteCb const& write_cb)
+{
+    return uv11::write2(req, stream, &buf, 1, send_handle, write_cb);
+}
+
 Error uv11::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsigned int nbufs,
     Stream& send_handle, WriteCb const& write_cb)
 {
@@ -130,6 +136,10 @@ Error uv11::write2(WriteRequest& req, Stream& stream, Buffer const bufs[], unsig
     return make_error(s);
 }
 
+Error uv11::try_write(Stream& stream, Buffer const& buf) {
+    return uv11::try_write(stream, &buf, 1);
+}
+
 Error uv11::try_write(Stream& stream, Buffer const bufs[], unsigned int nbufs) {
     int s = ::uv_try_write(
         &stream.GetStream(),
@@ -146,4 +156,10 @@ bool uv11::is_readable(Stream const& stream) {
 
 bool uv11::is_writable(Stream const& stream) {
     return ::uv_is_writable(&stream.GetStream());
+}
+
+Error uv11::stream_set_blocking(Stream& stream, bool blocking) {
+    int s = ::uv_stream_set_blocking(&stream.GetStream(), blocking);
+
+    return make_error(s);
 }

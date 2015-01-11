@@ -50,6 +50,8 @@ namespace uv11 {
     bool is_readable(Stream const&);
     bool is_writable(Stream const&);
 
+    Error stream_set_blocking(Stream&, bool);
+
 
     // INTERNALS
     template<typename T>
