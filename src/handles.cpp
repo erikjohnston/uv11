@@ -92,10 +92,13 @@ Poll::Poll(Loop& loop, int fd) : HandleBase(this) {
 Poll::~Poll() {}
 
 
+#include <iostream>
 Async::Async(Loop& loop, AsyncCb const& cb) : HandleBase(this), async_cb(cb) {
     ::uv_async_init(&loop.Get(), &this->Get(), [] (::uv_async_t* handle ) {
         Async* a = reinterpret_cast<Async*>(handle->data);
-        a->async_cb(*a);
+        auto cb = a->async_cb;
+std::cerr << "BLLLALSDAS";
+        cb(*a);
     });
 }
 

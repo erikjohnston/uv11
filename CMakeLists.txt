@@ -4,8 +4,17 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-c++98-compat -Wno-padded -Wno-exit-time-destructors -Wno-global-constructors")
 
-find_package(LibUV REQUIRED)
-link_directories(${LIBUV_LIBRARY_DIRS})
+if (NOT EXTERNALS_DIR)
+    set(EXTERNALS_DIR ${CMAKE_CURRENT_LIST_DIR}/externals/)
+endif(NOT EXTERNALS_DIR)
+
+find_package(LibUV)
+
+if (NOT LIBUV_FOUND)
+    MESSAGE(STATUS "Will download LibUV")
+    include(DownloadLibUV)
+    download_libuv("${EXTERNALS_DIR}/libuv" 1.2.0)
+endif(NOT LIBUV_FOUND)
 
 set(
     SOURCES
@@ -14,12 +23,13 @@ set(
 )
 
 add_library(uv11Objects OBJECT ${SOURCES})
-add_dependencies(uv11Objects ${LIBUV_DEPENDENCY})
+
+
 target_include_directories(uv11Objects PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
-target_include_directories(uv11Objects PRIVATE ${LIBUV_INCLUDE_DIRS})
+target_include_directories(uv11Objects PRIVATE ${LIBUV_INCLUDE_DIR})
 target_compile_options(uv11Objects PUBLIC "-std=c++11" "-fPIC")
 
 
@@ -32,7 +42,7 @@ target_include_directories(uv11 INTERFACE
 target_compile_options(uv11 PUBLIC "-std=c++11")
 
 add_library(uv11Static STATIC $<TARGET_OBJECTS:uv11Objects>)
-target_link_libraries(uv11Static uv)
+target_link_libraries(uv11Static uvStatic)
 target_include_directories(uv11Static INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
