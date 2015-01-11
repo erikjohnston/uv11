@@ -15,4 +15,11 @@ namespace uv11 {
     };
 
     Error tcp_connect(ConnectRequest&, Tcp&, sockaddr const&, ConnectCb const&);
+    Error tcp_open(Tcp&, ::uv_os_sock_t);
+    Error tcp_nodely(Tcp&, bool);
+    Error tcp_keepalive(Tcp&, bool, unsigned int delay);
+    Error tcp_simultaneous_accepts(Tcp&, bool enable);
+    Error tcp_bind(Tcp&, sockaddr const&, unsigned int flags);
+    Error tcp_getsockname(Tcp const&, sockaddr&, int*);
+    Error tcp_getpeername(Tcp const&, sockaddr&, int*);
 }
