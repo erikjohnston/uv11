@@ -5,8 +5,8 @@ using namespace uv11;
 Async::Async(Loop& loop, Async::Callback const& cb) : HandleBase(this), async_cb(cb) {
     ::uv_async_init(&loop.Get(), &this->Get(), [] (::uv_async_t* handle ) {
         Async* a = reinterpret_cast<Async*>(handle->data);
-        auto cb = a->async_cb;
-        cb(*a);
+        auto callback = a->async_cb;
+        callback(*a);
     });
 }
 
