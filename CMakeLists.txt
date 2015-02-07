@@ -8,13 +8,7 @@ if (NOT EXTERNALS_DIR)
     set(EXTERNALS_DIR ${CMAKE_CURRENT_LIST_DIR}/externals/)
 endif(NOT EXTERNALS_DIR)
 
-find_package(LibUV)
-
-if (NOT LIBUV_FOUND)
-    MESSAGE(STATUS "Will download LibUV")
-    include(DownloadLibUV)
-    download_libuv("${EXTERNALS_DIR}/libuv" 1.2.0)
-endif(NOT LIBUV_FOUND)
+find_package(LibUV REQUIRED)
 
 set(
     SOURCES
